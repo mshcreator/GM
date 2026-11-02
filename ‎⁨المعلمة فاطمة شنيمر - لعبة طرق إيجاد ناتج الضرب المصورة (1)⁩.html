@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>طرق إيجاد ناتج الضرب - المعلمة فاطمة شنيمر</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
+            min-height: 100vh;
+        }
+
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-bounce {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-bounce:hover {
+            transform: translateY(-2px);
+        }
+        .btn-bounce:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        .tab-active {
+            background-color: #2563eb;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Curly Brackets Styling for Grid */
+        .bracket-top-svg {
+            width: 100%;
+            height: 18px;
+        }
+        .bracket-side-svg {
+            height: 100%;
+            width: 18px;
+        }
+
+        /* Custom Input for Methods */
+        .method-input {
+            width: 4rem;
+            text-align: center;
+            background-color: #ffffff;
+            border: 2px solid #94a3b8;
+            border-radius: 0.75rem;
+            padding: 0.25rem;
+            font-size: 1.25rem;
+            font-weight: 900;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .method-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        .method-input.correct {
+            border-color: #10b981 !important;
+            background-color: #ecfdf5 !important;
+            color: #047857 !important;
+        }
+        .method-input.wrong {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+            color: #b91c1c !important;
+        }
+
+        /* Floating Virtual Keypad Drawer */
+        .keypad-drawer {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .keypad-drawer.hidden-drawer {
+            transform: translateY(100%);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-blue-200 pb-28">
+
+    <!-- Micro Header Bar (Minimized to Maximize Screen Area) -->
+    <header class="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 shadow-sm py-1 px-3">
+        <div class="max-w-7xl mx-auto flex justify-between items-center gap-2">
+            <div class="flex items-center gap-1.5">
+                <span class="text-xs sm:text-sm font-black text-slate-800">إشراف المعلمة: <span class="text-blue-700">فاطمة شنيمر</span></span>
+            </div>
+
+            <!-- Student Profile Badge Compact -->
+            <div class="flex items-center gap-1.5">
+                <div id="studentDisplayBadge" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-2 py-0.5 rounded-lg text-xs font-bold flex items-center gap-1">
+                    <i class="fa-solid fa-user-circle text-emerald-600"></i>
+                    <span id="displayStudentName">الطالب/الطالبة</span>
+                </div>
+                <button onclick="openNameModal()" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-md transition">
+                    تغيير الاسم
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-3 py-2 space-y-3">
+
+        <!-- Table Selector Bar (1 to 10) -->
+        <section class="bg-white rounded-2xl p-2.5 card-shadow border border-slate-100">
+            <div class="flex items-center justify-between mb-1.5 px-1">
+                <h2 class="text-xs font-extrabold text-slate-600 flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-ol text-blue-500"></i>
+                    اختر جدول الضرب (من ١ إلى ١٠):
+                </h2>
+            </div>
+            <div id="tableButtonsNav" class="grid grid-cols-5 sm:grid-cols-10 gap-1.5"></div>
+        </section>
+
+        <!-- Current Equation Banner (Compact) -->
+        <section class="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 rounded-2xl p-2.5 text-white shadow-md">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2 text-lg sm:text-xl font-black dir-rtl">
+                    <span class="text-amber-300 text-xs font-bold">جدول العدد:</span>
+                    <span id="eqFactor1" class="bg-white/20 px-3 py-0.5 rounded-xl border border-white/30 text-amber-300">٢</span>
+                </div>
+                <div class="text-[11px] text-blue-100 font-bold">
+                    انقر على المربع <span class="text-amber-300 font-black">「؟」</span> لإظهار لوحة المفاتيح وكتابة الناتج
+                </div>
+            </div>
+        </section>
+
+        <!-- Method Groups Tabs -->
+        <section class="flex gap-2">
+            <button onclick="switchGroup(1)" id="groupTab1" class="flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border transition-all btn-bounce tab-active">
+                <i class="fa-solid fa-shapes"></i>
+                <span>المجموعة الأولى (النماذج • الجمع • الشبكات • القفز)</span>
+            </button>
+
+            <button onclick="switchGroup(2)" id="groupTab2" class="flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all btn-bounce">
+                <i class="fa-solid fa-diagram-project text-indigo-600"></i>
+                <span>المجموعة الثانية (النمط • الحقائق • التقاطع • الرسم)</span>
+            </button>
+        </section>
+
+        <!-- GROUP 1 CONTAINER -->
+        <div id="group1Container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <!-- 1. Models (قطع العد / المكعبات) -->
+            <div class="bg-white rounded-3xl p-4 card-shadow border border-slate-100 flex flex-col justify-between space-y-3">
+                <div>
+                    <div class="flex items-center justify-between mb-2 border-b pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">١</span>
+                            <h3 class="font-bold text-slate-800 text-sm">النماذج (قطع العد / المكعبات)</h3>
+                        </div>
+                        <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">خاصية الإبدال 🔄</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- Method 1 -->
+                        <div class="bg-blue-50/60 p-2.5 rounded-2xl border border-blue-100 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-blue-800">الطريقة (١):</span>
+                                <button onclick="addModelStep(1)" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition btn-bounce">
+                                    ➕ كرر مجموعة
+                                </button>
+                            </div>
+                            
+                            <div class="flex items-center justify-center gap-2 bg-white/80 py-1.5 px-3 rounded-xl border border-blue-200">
+                                <span id="modelEq1" class="font-black text-blue-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputModel1" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputModel1', currentTable * f2_model1)" class="text-xs bg-blue-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                            
+                            <div id="modelContainer1" class="flex flex-wrap gap-1.5 justify-center py-1 min-h-[40px] items-center"></div>
+                        </div>
+
+                        <!-- Method 2 -->
+                        <div class="bg-amber-50/60 p-2.5 rounded-2xl border border-amber-100 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-amber-800">الطريقة (٢) الإبدال:</span>
+                                <button onclick="addModelStep(2)" class="bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition btn-bounce">
+                                    ➕ كرر مجموعة
+                                </button>
+                            </div>
+                            
+                            <div class="flex items-center justify-center gap-2 bg-white/80 py-1.5 px-3 rounded-xl border border-amber-200">
+                                <span id="modelEq2" class="font-black text-amber-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputModel2" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputModel2', f2_model2 * currentTable)" class="text-xs bg-amber-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+
+                            <div id="modelContainer2" class="flex flex-wrap gap-1.5 justify-center py-1 min-h-[40px] items-center"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-[11px] text-slate-500 font-bold border-t pt-2">
+                    <span>اضغط الزر لتكرار المجموعات واكتب الناتج</span>
+                    <button onclick="resetModelSteps()" class="text-blue-600 hover:underline">إعادة التكرار 🔄</button>
+                </div>
+            </div>
+
+            <!-- 2. Grids (الشبكات) -->
+            <div class="bg-white rounded-3xl p-4 card-shadow border border-slate-100 flex flex-col justify-between space-y-3">
+                <div>
+                    <div class="flex items-center justify-between mb-2 border-b pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs">٢</span>
+                            <h3 class="font-bold text-slate-800 text-sm">استعمال الشبكات (صفوف وأعمدة)</h3>
+                        </div>
+                        <span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold">رسم الشبكة 🔄</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- Grid 1 -->
+                        <div class="bg-purple-50/50 p-2.5 rounded-2xl border border-purple-100 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-purple-800">الطريقة (١): صفوف × أعمدة</span>
+                                <button onclick="addGridStep(1)" class="bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition btn-bounce">
+                                    ➕ أضف صفاً
+                                </button>
+                            </div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-purple-200">
+                                <span id="gridEq1" class="font-black text-purple-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputGrid1" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputGrid1', currentTable * f2_grid1)" class="text-xs bg-purple-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+
+                            <div id="gridDisplay1" class="py-1 min-h-[100px] flex items-center justify-center"></div>
+                        </div>
+
+                        <!-- Grid 2 -->
+                        <div class="bg-indigo-50/50 p-2.5 rounded-2xl border border-indigo-100 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-indigo-800">الطريقة (٢): أعمدة × صفوف</span>
+                                <button onclick="addGridStep(2)" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition btn-bounce">
+                                    ➕ أضف عموداً
+                                </button>
+                            </div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-indigo-200">
+                                <span id="gridEq2" class="font-black text-indigo-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputGrid2" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputGrid2', f2_grid2 * currentTable)" class="text-xs bg-indigo-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+
+                            <div id="gridDisplay2" class="py-1 min-h-[100px] flex items-center justify-center"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-[11px] text-slate-500 font-bold border-t pt-2">
+                    <span>ابنِ الصفوف والأعمدة واكتب الناتج في الخانات</span>
+                    <button onclick="resetGridSteps()" class="text-purple-600 hover:underline">إعادة الشبكة 🔄</button>
+                </div>
+            </div>
+
+            <!-- 3. Repeated Addition (الجمع المتكرر) -->
+            <div class="bg-white rounded-3xl p-4 card-shadow border border-slate-100 flex flex-col justify-between space-y-3">
+                <div>
+                    <div class="flex items-center justify-between mb-2 border-b pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs">٣</span>
+                            <h3 class="font-bold text-slate-800 text-sm">الجمع المتكرر التفاعلي</h3>
+                        </div>
+                        <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">جمل جمع مختلفة</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- Addition 1 -->
+                        <div class="bg-emerald-50/60 p-2.5 rounded-2xl border border-emerald-100 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-emerald-800">الطريقة (١):</span>
+                                <button onclick="addAdditionStep(1)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition btn-bounce">
+                                    ➕ أضف حد للجمع
+                                </button>
+                            </div>
+
+                            <div id="additionStr1" class="text-sm font-black text-emerald-900 text-center min-h-[26px] flex items-center justify-center"></div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-emerald-200">
+                                <span class="text-xs font-bold text-emerald-900">الناتج =</span>
+                                <input type="text" id="inputAdd1" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputAdd1', currentTable * f2_add1)" class="text-xs bg-emerald-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+
+                        <!-- Addition 2 -->
+                        <div class="bg-emerald-50/60 p-2.5 rounded-2xl border border-emerald-100 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-emerald-800">الطريقة (٢) الإبدال:</span>
+                                <button onclick="addAdditionStep(2)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition btn-bounce">
+                                    ➕ أضف حد للجمع
+                                </button>
+                            </div>
+
+                            <div id="additionStr2" class="text-sm font-black text-emerald-900 text-center min-h-[26px] flex items-center justify-center"></div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-emerald-200">
+                                <span class="text-xs font-bold text-emerald-900">الناتج =</span>
+                                <input type="text" id="inputAdd2" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputAdd2', f2_add2 * currentTable)" class="text-xs bg-emerald-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-[11px] text-slate-500 font-bold border-t pt-2">
+                    <span>كرر حدود الجمع واكتب الناتج بنفسك</span>
+                    <button onclick="resetAdditionSteps()" class="text-emerald-600 hover:underline">إعادة الجمع 🔄</button>
+                </div>
+            </div>
+
+            <!-- 4. Skip Counting (العد القفزي) -->
+            <div class="bg-white rounded-3xl p-4 card-shadow border border-slate-100 flex flex-col justify-between space-y-3">
+                <div>
+                    <div class="flex items-center justify-between mb-2 border-b pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xs">٤</span>
+                            <h3 class="font-bold text-slate-800 text-sm">العد القفزي (قفزات الكنغر 🦘)</h3>
+                        </div>
+                        <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">من اليمين لليسار</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- Line 1 -->
+                        <div class="bg-amber-50/40 p-2.5 rounded-2xl border border-amber-100 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-amber-800">طريقة (١):</span>
+                                <button onclick="addSkipStep(1)" class="bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition btn-bounce">
+                                    🦘 اقفز قفزة
+                                </button>
+                            </div>
+
+                            <div id="skipLine1" class="py-1 overflow-x-auto flex justify-center"></div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-amber-200">
+                                <span id="skipEq1" class="font-black text-amber-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputSkip1" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputSkip1', currentTable * f2_skip1)" class="text-xs bg-amber-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+
+                        <!-- Line 2 -->
+                        <div class="bg-amber-50/40 p-2.5 rounded-2xl border border-amber-100 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-amber-800">طريقة (٢) الإبدال:</span>
+                                <button onclick="addSkipStep(2)" class="bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition btn-bounce">
+                                    🦘 اقفز قفزة
+                                </button>
+                            </div>
+
+                            <div id="skipLine2" class="py-1 overflow-x-auto flex justify-center"></div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-amber-200">
+                                <span id="skipEq2" class="font-black text-amber-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputSkip2" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputSkip2', f2_skip2 * currentTable)" class="text-xs bg-amber-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-[11px] text-slate-500 font-bold border-t pt-2">
+                    <span>اقفز بالكنغر واكتب الناتج في المربع</span>
+                    <button onclick="resetSkipSteps()" class="text-amber-600 hover:underline">إعادة القفز 🔄</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- GROUP 2 CONTAINER -->
+        <div id="group2Container" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+
+            <!-- 1. Patterns (أنماط الضرب تفاعلية وحرة) -->
+            <div class="bg-white rounded-3xl p-4 card-shadow border border-slate-100 flex flex-col justify-between space-y-3">
+                <div>
+                    <div class="flex items-center justify-between mb-2 border-b pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">١</span>
+                            <h3 class="font-bold text-slate-800 text-sm">أنماط الضرب وخاصية الإبدال</h3>
+                        </div>
+                        <span class="text-[10px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-bold">بناء النمط بنفسك</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Pattern 1 -->
+                        <div class="bg-indigo-50/60 p-3 rounded-2xl border border-indigo-100 space-y-2.5">
+                            <div class="flex flex-wrap justify-between items-center gap-1.5">
+                                <span class="text-xs font-bold text-indigo-800">طريقة النمط (١):</span>
+                                <div class="flex gap-1">
+                                    <button onclick="changePatternBoxes(1, 1)" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold px-2 py-1 rounded-lg transition btn-bounce">➕ أضف مربعاً بالنمط</button>
+                                    <button onclick="changePatternBoxes(1, -1)" class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-1.5 py-1 rounded-lg">➖</button>
+                                </div>
+                            </div>
+
+                            <div id="patternDisplayArea1" class="py-2 min-h-[90px] overflow-x-auto flex justify-center"></div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-indigo-200">
+                                <span id="patternEq1" class="font-black text-indigo-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputPattern1" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputPattern1', currentTable * f2_pat1)" class="text-xs bg-indigo-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+
+                        <!-- Pattern 2 (Commutative) -->
+                        <div class="bg-amber-50/60 p-3 rounded-2xl border border-amber-100 space-y-2.5">
+                            <div class="flex flex-wrap justify-between items-center gap-1.5">
+                                <span class="text-xs font-bold text-amber-800">أو خاصية الإبدال نفس الجملة (٢):</span>
+                                <div class="flex gap-1">
+                                    <button onclick="changePatternBoxes(2, 1)" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold px-2 py-1 rounded-lg transition btn-bounce">➕ أضف مربعاً بالنمط</button>
+                                    <button onclick="changePatternBoxes(2, -1)" class="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-1 rounded-lg">➖</button>
+                                </div>
+                            </div>
+
+                            <div id="patternDisplayArea2" class="py-2 min-h-[90px] overflow-x-auto flex justify-center"></div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-amber-200">
+                                <span id="patternEq2" class="font-black text-amber-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputPattern2" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputPattern2', f2_pat1 * currentTable)" class="text-xs bg-amber-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-[11px] text-center text-slate-500 font-bold border-t pt-2">
+                    اضغط لإضافة المربعات وأسهم النمط ثم اكتب قيم النمط والزيادة بنفسك
+                </div>
+            </div>
+
+            <!-- 2. Related Facts -->
+            <div class="bg-white rounded-3xl p-4 card-shadow border border-slate-100 flex flex-col justify-between space-y-3">
+                <div>
+                    <div class="flex items-center justify-between mb-2 border-b pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xs">٢</span>
+                            <h3 class="font-bold text-slate-800 text-sm">الحقائق المترابطة (خاصية الإبدال)</h3>
+                        </div>
+                        <span class="text-[10px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full font-bold">ربط الحقائق</span>
+                    </div>
+
+                    <div class="bg-rose-50/60 p-3 rounded-2xl border border-rose-100 space-y-3">
+                        <div class="bg-white/80 p-2.5 rounded-xl border border-rose-200 text-center">
+                            <span class="text-xs text-slate-500 font-bold block mb-1">الحقيقة الأولى المعطاة:</span>
+                            <span id="factGiven" class="text-base font-black text-rose-900 dir-rtl"></span>
+                        </div>
+
+                        <div class="flex flex-col items-center gap-2 bg-white/90 p-3 rounded-xl border border-rose-200 text-center">
+                            <span class="text-xs font-black text-rose-700">فإن حقيقة الإبدال المترابطة تكون:</span>
+                            <div class="flex items-center justify-center gap-2">
+                                <span id="factTarget" class="font-black text-rose-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputFact" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputFact', currentTable * f2_fact)" class="text-xs bg-rose-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-[11px] text-center text-slate-500 font-bold border-t pt-2">
+                    استعن بحقيقة الضرب الأولى المكتملة لكتابة الناتج في المربع
+                </div>
+            </div>
+
+            <!-- 3. Intersections (نقاط التقاطع حرة وبدون تقييد) -->
+            <div class="bg-white rounded-3xl p-4 card-shadow border border-slate-100 flex flex-col justify-between space-y-3">
+                <div>
+                    <div class="flex items-center justify-between mb-2 border-b pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-cyan-100 text-cyan-600 flex items-center justify-center font-bold text-xs">٣</span>
+                            <h3 class="font-bold text-slate-800 text-sm">نقاط التقاطع (تحكم حر بالخطوط)</h3>
+                        </div>
+                        <span class="text-[10px] bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded-full font-bold">غير مقيدة بعدد</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- Intersection 1 -->
+                        <div class="bg-cyan-50/60 p-2.5 rounded-2xl border border-cyan-100 space-y-2">
+                            <div class="flex flex-wrap justify-between items-center gap-1.5">
+                                <span class="text-xs font-bold text-cyan-800">طريقة (١):</span>
+                                <div class="flex gap-1">
+                                    <button onclick="changeFreeLines('h1', 1)" class="bg-cyan-600 hover:bg-cyan-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">➕ خط أفقي</button>
+                                    <button onclick="changeFreeLines('h1', -1)" class="bg-cyan-100 text-cyan-800 hover:bg-cyan-200 text-[10px] font-bold px-1.5 py-0.5 rounded-lg">➖</button>
+                                    <button onclick="changeFreeLines('v1', 1)" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">➕ خط رأسي</button>
+                                    <button onclick="changeFreeLines('v1', -1)" class="bg-blue-100 text-blue-800 hover:bg-blue-200 text-[10px] font-bold px-1.5 py-0.5 rounded-lg">➖</button>
+                                </div>
+                            </div>
+
+                            <div id="intersectionDisplay1" class="min-h-[90px] flex items-center justify-center py-1"></div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-cyan-200">
+                                <span id="intersectionEq1" class="font-black text-cyan-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputIntersection1" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputIntersection1', currentTable * f2_int1)" class="text-xs bg-cyan-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+
+                        <!-- Intersection 2 (Commutative) -->
+                        <div class="bg-cyan-50/60 p-2.5 rounded-2xl border border-cyan-100 space-y-2">
+                            <div class="flex flex-wrap justify-between items-center gap-1.5">
+                                <span class="text-xs font-bold text-cyan-800">طريقة (٢) الإبدال:</span>
+                                <div class="flex gap-1">
+                                    <button onclick="changeFreeLines('h2', 1)" class="bg-cyan-600 hover:bg-cyan-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">➕ خط أفقي</button>
+                                    <button onclick="changeFreeLines('h2', -1)" class="bg-cyan-100 text-cyan-800 hover:bg-cyan-200 text-[10px] font-bold px-1.5 py-0.5 rounded-lg">➖</button>
+                                    <button onclick="changeFreeLines('v2', 1)" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">➕ خط رأسي</button>
+                                    <button onclick="changeFreeLines('v2', -1)" class="bg-blue-100 text-blue-800 hover:bg-blue-200 text-[10px] font-bold px-1.5 py-0.5 rounded-lg">➖</button>
+                                </div>
+                            </div>
+
+                            <div id="intersectionDisplay2" class="min-h-[90px] flex items-center justify-center py-1"></div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-cyan-200">
+                                <span id="intersectionEq2" class="font-black text-cyan-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputIntersection2" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputIntersection2', f2_int2 * currentTable)" class="text-xs bg-cyan-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-[11px] text-slate-500 font-bold border-t pt-2">
+                    <span>تحكم بعدد الخطوط الأفقية والرأسية بحرية ثم ادخل الناتج</span>
+                    <button onclick="resetIntersectionSteps()" class="text-cyan-600 hover:underline">إعادة 🔄</button>
+                </div>
+            </div>
+
+            <!-- 4. Groups & Drawings (الرسم والمجموعات حرة وبدون تقييد) -->
+            <div class="bg-white rounded-3xl p-4 card-shadow border border-slate-100 flex flex-col justify-between space-y-3">
+                <div>
+                    <div class="flex items-center justify-between mb-2 border-b pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">٤</span>
+                            <h3 class="font-bold text-slate-800 text-sm">الرسم والمجموعات المتساوية (تحكم حر)</h3>
+                        </div>
+                        <span class="text-[10px] bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full font-bold">إضافة مجموعات وأشكال</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- Group Drawing 1 -->
+                        <div class="bg-orange-50/60 p-2.5 rounded-2xl border border-orange-100 space-y-2">
+                            <div class="flex flex-wrap justify-between items-center gap-1.5">
+                                <span class="text-xs font-bold text-orange-800">طريقة (١):</span>
+                                <div class="flex gap-1">
+                                    <button onclick="changeFreeGroups('g1', 1)" class="bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">➕ مجموعة</button>
+                                    <button onclick="changeFreeGroups('g1', -1)" class="bg-orange-100 text-orange-800 text-[10px] font-bold px-1.5 py-0.5 rounded-lg">➖ مجموعة</button>
+                                    <button onclick="changeFreeGroups('i1', 1)" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">➕ شكل</button>
+                                    <button onclick="changeFreeGroups('i1', -1)" class="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded-lg">➖ شكل</button>
+                                </div>
+                            </div>
+
+                            <div id="groupDrawContainer1" class="min-h-[70px] flex flex-wrap gap-1.5 items-center justify-center py-1"></div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-orange-200">
+                                <span id="groupDrawEq1" class="font-black text-orange-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputGroupDraw1" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputGroupDraw1', currentTable * f2_grp1)" class="text-xs bg-orange-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+
+                        <!-- Group Drawing 2 (Commutative) -->
+                        <div class="bg-orange-50/60 p-2.5 rounded-2xl border border-orange-100 space-y-2">
+                            <div class="flex flex-wrap justify-between items-center gap-1.5">
+                                <span class="text-xs font-bold text-orange-800">طريقة (٢) الإبدال:</span>
+                                <div class="flex gap-1">
+                                    <button onclick="changeFreeGroups('g2', 1)" class="bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">➕ مجموعة</button>
+                                    <button onclick="changeFreeGroups('g2', -1)" class="bg-orange-100 text-orange-800 text-[10px] font-bold px-1.5 py-0.5 rounded-lg">➖ مجموعة</button>
+                                    <button onclick="changeFreeGroups('i2', 1)" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">➕ شكل</button>
+                                    <button onclick="changeFreeGroups('i2', -1)" class="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded-lg">➖ شكل</button>
+                                </div>
+                            </div>
+
+                            <div id="groupDrawContainer2" class="min-h-[70px] flex flex-wrap gap-1.5 items-center justify-center py-1"></div>
+
+                            <div class="flex items-center justify-center gap-2 bg-white/90 p-1.5 rounded-xl border border-orange-200">
+                                <span id="groupDrawEq2" class="font-black text-orange-900 text-sm dir-rtl"></span>
+                                <input type="text" id="inputGroupDraw2" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer">
+                                <button onclick="verifyMethodInput('inputGroupDraw2', f2_grp2 * currentTable)" class="text-xs bg-orange-600 text-white font-bold px-2.5 py-1.5 rounded-lg">تحقق</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-[11px] text-slate-500 font-bold border-t pt-2">
+                    <span>تحكم في المجموعات والأشكال بحرية كاملة ثم اكتب الناتج</span>
+                    <button onclick="resetGroupDrawSteps()" class="text-orange-600 hover:underline">إعادة 🔄</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Quiz & Certificate Action -->
+        <section class="bg-white rounded-3xl p-5 card-shadow border border-slate-100 space-y-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-amber-500/20">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-black text-slate-800">اختبار الإتقان للحصول على الشهادة</h2>
+                        <p class="text-xs text-slate-500">أجب عن 3 أسئلة لتسجيل إتقانك واستلام الشهادة باسمك!</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl">
+                    <span class="text-xs font-bold text-slate-600">النقاط:</span>
+                    <span id="quizScoreDisplay" class="text-base font-black text-blue-600">٠ / ٣</span>
+                </div>
+            </div>
+
+            <!-- Quiz Question -->
+            <div id="quizBox" class="bg-gradient-to-br from-slate-50 to-blue-50/40 rounded-2xl p-4 border border-slate-200/80 text-center space-y-4">
+                <div class="text-xs font-bold text-blue-600 uppercase">سؤال اختبار الإتقان السريع</div>
+                <div id="quizQuestionText" class="text-2xl font-black text-slate-800 dir-rtl">
+                    ٢ × ٣ = ؟
+                </div>
+
+                <div id="quizOptions" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-w-xl mx-auto"></div>
+
+                <div id="quizFeedback" class="text-xs font-bold h-5 transition-all"></div>
+            </div>
+
+            <!-- Certificate Unlock Card -->
+            <div id="certificateUnlockCard" class="hidden bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-5 text-white text-center space-y-2.5 shadow-lg">
+                <div class="text-2xl">🎉 📜 🎉</div>
+                <h3 class="text-lg font-black">مبارك! لقد أتقنت مهارات الضرب بنجاح!</h3>
+                <p class="text-xs opacity-90">تم فتح شهادة التميز المعتمدة من المعلمة فاطمة شنيمر.</p>
+                <button onclick="openCertificateModal()" class="bg-white text-emerald-800 font-black px-5 py-2.5 rounded-xl shadow-md hover:bg-emerald-50 transition btn-bounce inline-flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-award text-amber-500 text-base"></i>
+                    <span>عرض وطباعة شهادة الإتقان</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Floating Interactive Keypad Drawer Popup -->
+    <div id="floatingKeypadDrawer" class="fixed bottom-0 inset-x-0 z-50 p-3 keypad-drawer hidden-drawer">
+        <div class="max-w-md mx-auto bg-slate-900/95 backdrop-blur-lg border border-slate-700 p-3 rounded-3xl shadow-2xl text-white space-y-2.5">
+            <div class="flex justify-between items-center px-1">
+                <span class="text-xs font-bold text-amber-300">لوحة المفاتيح الإفتراضية لإدخال الإجابة:</span>
+                <button onclick="closeKeypadDrawer()" class="w-6 h-6 bg-white/20 hover:bg-rose-500 text-white rounded-full flex items-center justify-center text-xs transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="keypadDigitsContainer" class="grid grid-cols-5 gap-1.5 dir-rtl"></div>
+            <div class="flex gap-2">
+                <button onclick="clearKeypad()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 rounded-xl text-xs transition">
+                    مسح ✖
+                </button>
+                <button onclick="closeKeypadDrawer()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 rounded-xl text-xs transition">
+                    تم 👍
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Name Modal -->
+    <div id="nameModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-4 shadow-2xl border border-slate-100">
+            <div class="text-center space-y-1.5">
+                <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <h3 class="text-lg font-black text-slate-800">أهلاً بك في لعبة طرق الضرب!</h3>
+                <p class="text-xs text-slate-500">أدخل اسم الطالب أو الطالبة ليتم إدراجه في شهادة الإتقان</p>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-700 block text-right">اسم الطالب / الطالبة:</label>
+                <input type="text" id="studentNameInput" placeholder="اكتب الاسم هنا..." class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 font-bold text-center text-base">
+            </div>
+
+            <button onclick="saveStudentName()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30 transition btn-bounce text-sm">
+                حفظ وابدأ اللعب 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- Certificate Modal -->
+    <div id="certificateModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-3xl max-w-3xl w-full p-4 sm:p-6 space-y-4 shadow-2xl relative my-auto">
+            
+            <button onclick="closeCertificateModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+
+            <!-- Printable Certificate Container -->
+            <div id="printable-certificate" class="bg-gradient-to-br from-amber-50 via-white to-orange-50 border-8 border-double border-amber-400 p-5 sm:p-8 rounded-2xl text-center space-y-5 relative overflow-hidden shadow-inner">
+                
+                <div class="flex justify-between items-center border-b-2 border-amber-200 pb-3">
+                    <div class="text-right">
+                        <p class="text-xs font-bold text-amber-800">المملكة العربية السعودية</p>
+                        <p class="text-[10px] font-semibold text-slate-600">وزارة التعليم</p>
+                    </div>
+                    <div class="w-14 h-14 bg-amber-500 rounded-full flex items-center justify-center text-white text-xl shadow-md border-2 border-amber-200">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-xs font-bold text-amber-800">شهادة إتقان مهارة</p>
+                        <p class="text-[10px] font-semibold text-slate-600">جدول الضرب (١ إلى ١٠)</p>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <h2 class="text-xl sm:text-3xl font-black text-amber-900 tracking-wide">🏆 شهادة إتقان مهارة 🏆</h2>
+                    <p class="text-xs font-bold text-amber-700">تمنح هذه الشهادة المعتمدة للطالب/الطالبة المتميز</p>
+                </div>
+
+                <div class="py-1">
+                    <p class="text-xs font-semibold text-slate-600">تشهد المعلمة بأهمية تفوق الطالب / الطالبة:</p>
+                    <div id="certStudentName" class="text-xl sm:text-3xl font-black text-blue-700 py-2 border-b-2 border-dashed border-amber-400 inline-block px-6 min-w-[200px]">
+                        اسم الطالب
+                    </div>
+                </div>
+
+                <p class="text-xs sm:text-sm font-bold text-slate-700 leading-relaxed max-w-xl mx-auto">
+                    على إتقان طرق إيجاد ناتج الضرب (النماذج، الجمع المتكرر، الشبكات، العد القفزي، النمط، الحقائق المترابطة، نقاط التقاطع، والرسم) بمهارة وتفوق.
+                </p>
+
+                <div class="pt-4 border-t-2 border-amber-200 flex justify-between items-end text-xs font-bold text-slate-800">
+                    <div class="text-right space-y-0.5">
+                        <p class="text-slate-500 text-[10px]">المعلمة المشرفة:</p>
+                        <p class="text-sm font-black text-amber-900">أ. فاطمة شنيمر</p>
+                    </div>
+                    <div class="w-16 h-16 border-2 border-amber-300 rounded-full flex items-center justify-center bg-amber-100/50 text-amber-700 font-black text-[9px] rotate-12 shadow-sm">
+                        ختم الإتقان ✨
+                    </div>
+                    <div class="text-left space-y-0.5">
+                        <p class="text-slate-500 text-[10px]">التاريخ:</p>
+                        <p id="certDate" class="font-bold text-slate-700 text-xs"></p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-2 justify-center pt-1">
+                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl shadow-md transition btn-bounce flex items-center gap-2 text-xs">
+                    <i class="fa-solid fa-print"></i>
+                    <span>طباعة الشهادة</span>
+                </button>
+                <button onclick="closeCertificateModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-2 rounded-xl transition btn-bounce text-xs">
+                    إغلاق
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Application JavaScript -->
+    <script>
+        const arabicDigitsMap = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩','١٠'];
+
+        function toArabicDigits(num) {
+            return String(num).replace(/\d/g, d => arabicDigitsMap[d] || d);
+        }
+
+        function toEnglishDigits(str) {
+            const map = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+            return String(str).replace(/[٠-٩]/g, function(w) { return map[w]; });
+        }
+
+        let currentTable = 2; // Selected Multiplication Table
+        let studentName = "";
+        let quizScore = 0;
+        let currentQuizAnswer = 0;
+        let activeInputTarget = null;
+
+        // Dynamic Variations for Group 1 Methods
+        let f2_model1 = 3, f2_model2 = 4;
+        let f2_grid1 = 3, f2_grid2 = 5;
+        let f2_add1 = 4, f2_add2 = 3;
+        let f2_skip1 = 3, f2_skip2 = 4;
+
+        // Dynamic Variations for Group 2 Methods
+        let f2_pat1 = 3, f2_pat2 = 4;
+        let f2_fact = 4;
+        let f2_int1 = 3, f2_int2 = 4;
+        let f2_grp1 = 3, f2_grp2 = 4;
+
+        // Interactive Steps Counters for Group 1
+        let userModelSteps1 = 0, userModelSteps2 = 0;
+        let userGridSteps1 = 0, userGridSteps2 = 0;
+        let userAdditionSteps1 = 0, userAdditionSteps2 = 0;
+        let userSkipSteps1 = 0, userSkipSteps2 = 0;
+
+        // Free Interactive State Counters for Group 2
+        let freeHLines1 = 0, freeVLines1 = 0;
+        let freeHLines2 = 0, freeVLines2 = 0;
+
+        let freeGrpCount1 = 0, freeItemCount1 = 0;
+        let freeGrpCount2 = 0, freeItemCount2 = 0;
+
+        window.onload = function() {
+            buildNavButtons();
+            buildKeypad();
+
+            const savedName = localStorage.getItem('snimer_student_name');
+            if (savedName) {
+                studentName = savedName;
+                updateStudentNameUI();
+            } else {
+                openNameModal();
+            }
+
+            resetInteractiveCounts();
+            renderAllMethods();
+            generateQuizQuestion();
+            setTodayDate();
+        };
+
+        function buildNavButtons() {
+            const tableNav = document.getElementById('tableButtonsNav');
+            tableNav.innerHTML = "";
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.onclick = () => selectTable(i);
+                btn.className = `py-2 rounded-xl font-black text-xs sm:text-sm transition btn-bounce border ${i === currentTable ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}`;
+                btn.innerText = `جدول ${toArabicDigits(i)}`;
+                tableNav.appendChild(btn);
+            }
+        }
+
+        function selectTable(num) {
+            currentTable = num;
+            
+            // Generate varied equations for both groups
+            f2_model1 = (num % 5) + 2; f2_model2 = (num % 4) + 3;
+            f2_grid1 = (num % 3) + 3;  f2_grid2 = (num % 4) + 2;
+            f2_add1 = (num % 4) + 2;   f2_add2 = (num % 3) + 4;
+            f2_skip1 = (num % 3) + 2;  f2_skip2 = (num % 5) + 2;
+
+            f2_pat1 = (num % 4) + 2;   f2_pat2 = (num % 3) + 3;
+            f2_fact = (num % 5) + 2;
+            f2_int1 = (num % 3) + 2;   f2_int2 = (num % 4) + 2;
+            f2_grp1 = (num % 4) + 2;   f2_grp2 = (num % 3) + 3;
+
+            buildNavButtons();
+            document.getElementById('eqFactor1').innerText = toArabicDigits(currentTable);
+            resetInteractiveCounts();
+            renderAllMethods();
+            generateQuizQuestion();
+        }
+
+        function switchGroup(groupNum) {
+            const g1 = document.getElementById('group1Container');
+            const g2 = document.getElementById('group2Container');
+            const tab1 = document.getElementById('groupTab1');
+            const tab2 = document.getElementById('groupTab2');
+
+            if (groupNum === 1) {
+                g1.classList.remove('hidden');
+                g2.classList.add('hidden');
+                tab1.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border transition-all btn-bounce tab-active";
+                tab2.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all btn-bounce";
+            } else {
+                g2.classList.remove('hidden');
+                g1.classList.add('hidden');
+                tab2.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border transition-all btn-bounce tab-active";
+                tab1.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all btn-bounce";
+            }
+        }
+
+        function resetInteractiveCounts() {
+            userModelSteps1 = 0; userModelSteps2 = 0;
+            userGridSteps1 = 0; userGridSteps2 = 0;
+            userAdditionSteps1 = 0; userAdditionSteps2 = 0;
+            userSkipSteps1 = 0; userSkipSteps2 = 0;
+            
+            freeHLines1 = 0; freeVLines1 = 0;
+            freeHLines2 = 0; freeVLines2 = 0;
+
+            freeGrpCount1 = 0; freeItemCount1 = 0;
+            freeGrpCount2 = 0; freeItemCount2 = 0;
+            clearMethodInputs();
+        }
+
+        function setActiveInput(elem) {
+            activeInputTarget = elem;
+            document.querySelectorAll('.method-input').forEach(inp => {
+                inp.classList.remove('ring-4', 'ring-amber-400');
+            });
+            elem.classList.add('ring-4', 'ring-amber-400');
+            openKeypadDrawer();
+        }
+
+        function openKeypadDrawer() {
+            const drawer = document.getElementById('floatingKeypadDrawer');
+            drawer.classList.remove('hidden-drawer');
+        }
+
+        function closeKeypadDrawer() {
+            const drawer = document.getElementById('floatingKeypadDrawer');
+            drawer.classList.add('hidden-drawer');
+        }
+
+        function buildKeypad() {
+            const keypadContainer = document.getElementById('keypadDigitsContainer');
+            keypadContainer.innerHTML = "";
+            const digits = ['١','٢','٣','٤','٥','٦','٧','٨','٩','٠'];
+            digits.forEach(d => {
+                const btn = document.createElement('button');
+                btn.onclick = () => appendKeypad(d);
+                btn.className = "bg-white/10 hover:bg-amber-400 hover:text-slate-900 text-white font-black py-2 rounded-xl text-lg transition active:scale-95 border border-white/10";
+                btn.innerText = d;
+                keypadContainer.appendChild(btn);
+            });
+        }
+
+        function appendKeypad(digit) {
+            if (activeInputTarget && activeInputTarget.value.length < 4) {
+                activeInputTarget.value += digit;
+            }
+        }
+
+        function clearKeypad() {
+            if (activeInputTarget) {
+                activeInputTarget.value = "";
+                activeInputTarget.className = "method-input cursor-pointer";
+            }
+        }
+
+        function verifyMethodInput(inputId, expectedValue) {
+            const inp = document.getElementById(inputId);
+            if(!inp) return;
+            const userVal = parseInt(toEnglishDigits(inp.value.trim()));
+            if (userVal === expectedValue) {
+                inp.className = "method-input correct cursor-pointer";
+                confetti({ particleCount: 20, spread: 40, origin: { y: 0.5 } });
+            } else {
+                inp.className = "method-input wrong cursor-pointer";
+            }
+        }
+
+        function clearMethodInputs() {
+            const inputs = [
+                'inputModel1', 'inputModel2', 'inputGrid1', 'inputGrid2', 
+                'inputAdd1', 'inputAdd2', 'inputSkip1', 'inputSkip2',
+                'inputPattern1', 'inputPattern2', 'inputFact',
+                'inputIntersection1', 'inputIntersection2', 
+                'inputGroupDraw1', 'inputGroupDraw2'
+            ];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.value = "";
+                    el.className = "method-input cursor-pointer";
+                }
+            });
+        }
+
+        // --- GROUP 1 METHODS RENDERERS ---
+
+        function addModelStep(type) {
+            if (type === 1 && userModelSteps1 < currentTable) userModelSteps1++;
+            if (type === 2 && userModelSteps2 < f2_model2) userModelSteps2++;
+            renderModels();
+        }
+        function resetModelSteps() { userModelSteps1 = 0; userModelSteps2 = 0; renderModels(); }
+
+        function renderModels() {
+            const f1 = currentTable;
+
+            document.getElementById('modelEq1').innerText = `${toArabicDigits(f1)} × ${toArabicDigits(f2_model1)} = `;
+            document.getElementById('modelEq2').innerText = `${toArabicDigits(f2_model2)} × ${toArabicDigits(f1)} = `;
+
+            let m1Html = "";
+            for(let i=0; i<userModelSteps1; i++) {
+                m1Html += `<div class="bg-blue-500 text-white px-2 py-1 rounded-lg flex gap-1 items-center shadow-sm text-xs font-bold">`;
+                for(let j=0; j<f2_model1; j++) {
+                    m1Html += `<span class="w-3.5 h-3.5 rounded-sm bg-blue-200 border border-blue-600 block"></span>`;
+                }
+                m1Html += `</div>`;
+            }
+            if (userModelSteps1 === 0) m1Html = `<span class="text-xs font-bold text-slate-400">انقر كرر مجموعة لإنشاء المكعبات (${toArabicDigits(f1)} مجموعات)</span>`;
+            document.getElementById('modelContainer1').innerHTML = m1Html;
+
+            let m2Html = "";
+            for(let i=0; i<userModelSteps2; i++) {
+                m2Html += `<div class="bg-amber-500 text-white px-2 py-1 rounded-lg flex gap-1 items-center shadow-sm text-xs font-bold">`;
+                for(let j=0; j<f1; j++) {
+                    m2Html += `<span class="w-3.5 h-3.5 rounded-sm bg-amber-200 border border-amber-600 block"></span>`;
+                }
+                m2Html += `</div>`;
+            }
+            if (userModelSteps2 === 0) m2Html = `<span class="text-xs font-bold text-slate-400">انقر كرر مجموعة لإنشاء المكعبات (${toArabicDigits(f2_model2)} مجموعات)</span>`;
+            document.getElementById('modelContainer2').innerHTML = m2Html;
+        }
+
+        function addGridStep(type) {
+            if (type === 1 && userGridSteps1 < currentTable) userGridSteps1++;
+            if (type === 2 && userGridSteps2 < f2_grid2) userGridSteps2++;
+            renderGrids();
+        }
+        function resetGridSteps() { userGridSteps1 = 0; userGridSteps2 = 0; renderGrids(); }
+
+        function renderGrids() {
+            const f1 = currentTable;
+
+            document.getElementById('gridEq1').innerText = `${toArabicDigits(f1)} × ${toArabicDigits(f2_grid1)} = `;
+            document.getElementById('gridEq2').innerText = `${toArabicDigits(f2_grid2)} × ${toArabicDigits(f1)} = `;
+
+            function drawGridWithBrackets(rows, cols, isCommutative) {
+                if (rows === 0) return `<span class="text-xs font-bold text-slate-400">اضغط الزر لبناء أبعاد الشبكة</span>`;
+
+                const strokeColor = isCommutative ? "#4f46e5" : "#7e22ce";
+                const bgBoxColor = isCommutative ? "bg-indigo-100/80" : "bg-purple-100/80";
+
+                let html = `<div class="flex flex-col items-center gap-1 dir-rtl max-w-full">`;
+                
+                // Top Bracket SVG (Columns)
+                html += `<div class="flex flex-col items-center w-full px-1">`;
+                html += `<span class="text-[10px] font-black ${isCommutative ? 'text-indigo-900' : 'text-purple-900'}">أعمدة (${toArabicDigits(cols)})</span>`;
+                html += `<svg class="bracket-top-svg" viewBox="0 0 100 15" preserveAspectRatio="none">
+                            <path d="M 5,12 Q 5,3 25,3 L 45,3 Q 50,3 50,0 Q 50,3 55,3 L 75,3 Q 95,3 95,12" fill="none" stroke="${strokeColor}" stroke-width="3"/>
+                         </svg>`;
+                html += `</div>`;
+
+                // Side Bracket SVG + Grid Box
+                html += `<div class="flex items-center gap-2">`;
+                
+                // Side Bracket (Rows - Right Side in RTL)
+                html += `<div class="flex items-center gap-1">`;
+                html += `<span class="text-[10px] font-black ${isCommutative ? 'text-indigo-900' : 'text-purple-900'}">صفوفاً (${toArabicDigits(rows)})</span>`;
+                html += `<svg class="bracket-side-svg" viewBox="0 0 15 100" preserveAspectRatio="none">
+                            <path d="M 3,5 Q 12,5 12,25 L 12,45 Q 12,50 15,50 Q 12,50 12,55 L 12,75 Q 12,95 3,95" fill="none" stroke="${strokeColor}" stroke-width="3"/>
+                         </svg>`;
+                html += `</div>`;
+
+                // Grid Box
+                html += `<div class="grid gap-0 bg-white border-2 border-slate-900 rounded-sm shadow-md overflow-hidden" style="grid-template-columns: repeat(${cols}, minmax(0, 1fr));">`;
+                for(let r=0; r<rows; r++) {
+                    for(let c=0; c<cols; c++) {
+                        html += `<div class="w-5 h-5 sm:w-6 sm:h-6 border border-slate-400 ${bgBoxColor}"></div>`;
+                    }
+                }
+                html += `</div>`;
+
+                html += `</div></div>`;
+                return html;
+            }
+
+            document.getElementById('gridDisplay1').innerHTML = drawGridWithBrackets(userGridSteps1, f2_grid1, false);
+            document.getElementById('gridDisplay2').innerHTML = drawGridWithBrackets(userGridSteps2, f1, true);
+        }
+
+        function addAdditionStep(type) {
+            if (type === 1 && userAdditionSteps1 < currentTable) userAdditionSteps1++;
+            if (type === 2 && userAdditionSteps2 < f2_add2) userAdditionSteps2++;
+            renderAddition();
+        }
+        function resetAdditionSteps() { userAdditionSteps1 = 0; userAdditionSteps2 = 0; renderAddition(); }
+
+        function renderAddition() {
+            const f1 = currentTable;
+
+            if (userAdditionSteps1 > 0) {
+                let add1 = Array(userAdditionSteps1).fill(toArabicDigits(f2_add1)).join(" + ");
+                document.getElementById('additionStr1').innerHTML = `<span>${toArabicDigits(f1)} × ${toArabicDigits(f2_add1)} = ${add1}</span>`;
+            } else {
+                document.getElementById('additionStr1').innerHTML = `<span class="text-xs font-bold text-slate-400">جملة الجمع (${toArabicDigits(f1)} × ${toArabicDigits(f2_add1)}): أضف تكرار العدد ${toArabicDigits(f2_add1)}</span>`;
+            }
+
+            if (userAdditionSteps2 > 0) {
+                let add2 = Array(userAdditionSteps2).fill(toArabicDigits(f1)).join(" + ");
+                document.getElementById('additionStr2').innerHTML = `<span>${toArabicDigits(f2_add2)} × ${toArabicDigits(f1)} = ${add2}</span>`;
+            } else {
+                document.getElementById('additionStr2').innerHTML = `<span class="text-xs font-bold text-slate-400">جملة الجمع (${toArabicDigits(f2_add2)} × ${toArabicDigits(f1)}): أضف تكرار العدد ${toArabicDigits(f1)}</span>`;
+            }
+        }
+
+        function addSkipStep(type) {
+            if (type === 1 && userSkipSteps1 < currentTable) userSkipSteps1++;
+            if (type === 2 && userSkipSteps2 < f2_skip2) userSkipSteps2++;
+            renderSkipCounting();
+        }
+        function resetSkipSteps() { userSkipSteps1 = 0; userSkipSteps2 = 0; renderSkipCounting(); }
+
+        function renderSkipCounting() {
+            const f1 = currentTable;
+
+            document.getElementById('skipEq1').innerText = `${toArabicDigits(f1)} × ${toArabicDigits(f2_skip1)} = `;
+            document.getElementById('skipEq2').innerText = `${toArabicDigits(f2_skip2)} × ${toArabicDigits(f1)} = `;
+
+            function buildNumberLineSVG(stepCount, jumpSize) {
+                const maxVal = Math.max(stepCount * jumpSize, 10);
+                const width = 300;
+                const height = 65;
+                const stepWidth = width / (maxVal + 1);
+
+                let svgHtml = `<svg width="${width}" height="${height}" class="overflow-visible">`;
+                // Main Axis Line
+                svgHtml += `<line x1="10" y1="45" x2="${width-10}" y2="45" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>`;
+
+                // Ticks & Numbers (Right to Left: 0 on the Right)
+                for(let i=0; i<=maxVal; i++) {
+                    let x = (width - 10) - (i * stepWidth);
+                    svgHtml += `<line x1="${x}" y1="40" x2="${x}" y2="50" stroke="#64748b" stroke-width="2"/>`;
+                    svgHtml += `<text x="${x}" y="62" font-size="10" font-weight="bold" fill="#334155" text-anchor="middle">${toArabicDigits(i)}</text>`;
+                }
+
+                // Jump Arches (RTL Jump)
+                for(let j=0; j<stepCount; j++) {
+                    let startX = (width - 10) - (j * jumpSize * stepWidth);
+                    let endX = (width - 10) - ((j + 1) * jumpSize * stepWidth);
+                    let midX = (startX + endX) / 2;
+                    svgHtml += `<path d="M ${startX},40 Q ${midX},10 ${endX},40" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4,2"/>`;
+
+                    // Kangaroo Icon at the current end point
+                    if (j === stepCount - 1) {
+                        svgHtml += `<text x="${endX}" y="15" font-size="16" text-anchor="middle">🦘</text>`;
+                    }
+                }
+
+                svgHtml += `</svg>`;
+                return svgHtml;
+            }
+
+            document.getElementById('skipLine1').innerHTML = buildNumberLineSVG(userSkipSteps1, f2_skip1);
+            document.getElementById('skipLine2').innerHTML = buildNumberLineSVG(userSkipSteps2, f1);
+        }
+
+        // --- FREE INTERACTION HANDLERS FOR INTERSECTIONS & GROUPS ---
+
+        function changeFreeLines(type, val) {
+            if (type === 'h1') freeHLines1 = Math.max(0, freeHLines1 + val);
+            if (type === 'v1') freeVLines1 = Math.max(0, freeVLines1 + val);
+            if (type === 'h2') freeHLines2 = Math.max(0, freeHLines2 + val);
+            if (type === 'v2') freeVLines2 = Math.max(0, freeVLines2 + val);
+            renderIntersections();
+        }
+        function resetIntersectionSteps() {
+            freeHLines1 = 0; freeVLines1 = 0;
+            freeHLines2 = 0; freeVLines2 = 0;
+            renderIntersections();
+        }
+
+        function renderIntersections() {
+            const f1 = currentTable;
+
+            document.getElementById('intersectionEq1').innerText = `${toArabicDigits(f1)} × ${toArabicDigits(f2_int1)} = `;
+            document.getElementById('intersectionEq2').innerText = `${toArabicDigits(f2_int2)} × ${toArabicDigits(f1)} = `;
+
+            function drawIntersectionSvg(hLines, vLines) {
+                if (hLines === 0 && vLines === 0) return `<span class="text-xs font-bold text-slate-400">انقر على الأزرار لإضافة الخطوط الأفقية والرأسية بالأعداد التي تختارها</span>`;
+
+                let displayH = Math.max(hLines, 1);
+                let displayV = Math.max(vLines, 1);
+
+                let svgW = Math.max(140, displayV * 24 + 30);
+                let svgH = Math.max(90, displayH * 18 + 25);
+                let svgHtml = `<svg width="${svgW}" height="${svgH}" class="bg-white p-2 rounded-2xl border border-cyan-200 shadow-sm">`;
+                
+                let hS = svgH / (displayH + 1);
+                for(let i=1; i<=hLines; i++) {
+                    svgHtml += `<line x1="8" y1="${i*hS}" x2="${svgW-8}" y2="${i*hS}" stroke="#06b6d4" stroke-width="3" stroke-linecap="round"/>`;
+                }
+                
+                let vS = svgW / (displayV + 1);
+                for(let j=1; j<=vLines; j++) {
+                    svgHtml += `<line x1="${j*vS}" y1="8" x2="${j*vS}" y2="${svgH-8}" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>`;
+                }
+
+                if (hLines > 0 && vLines > 0) {
+                    for(let i=1; i<=hLines; i++) {
+                        for(let j=1; j<=vLines; j++) {
+                            svgHtml += `<circle cx="${j*vS}" cy="${i*hS}" r="4" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>`;
+                        }
+                    }
+                }
+
+                svgHtml += `</svg>`;
+                return svgHtml;
+            }
+
+            document.getElementById('intersectionDisplay1').innerHTML = drawIntersectionSvg(freeHLines1, freeVLines1);
+            document.getElementById('intersectionDisplay2').innerHTML = drawIntersectionSvg(freeHLines2, freeVLines2);
+        }
+
+        function changeFreeGroups(type, val) {
+            if (type === 'g1') freeGrpCount1 = Math.max(0, freeGrpCount1 + val);
+            if (type === 'i1') freeItemCount1 = Math.max(0, freeItemCount1 + val);
+            if (type === 'g2') freeGrpCount2 = Math.max(0, freeGrpCount2 + val);
+            if (type === 'i2') freeItemCount2 = Math.max(0, freeItemCount2 + val);
+            renderGroupDrawings();
+        }
+        function resetGroupDrawSteps() {
+            freeGrpCount1 = 0; freeItemCount1 = 0;
+            freeGrpCount2 = 0; freeItemCount2 = 0;
+            renderGroupDrawings();
+        }
+
+        function renderGroupDrawings() {
+            const f1 = currentTable;
+
+            document.getElementById('groupDrawEq1').innerText = `${toArabicDigits(f1)} × ${toArabicDigits(f2_grp1)} = `;
+            document.getElementById('groupDrawEq2').innerText = `${toArabicDigits(f2_grp2)} × ${toArabicDigits(f1)} = `;
+
+            function drawFreeGroupsContainer(grpCount, itemCount, colorStyle) {
+                if (grpCount === 0) return `<span class="text-xs font-bold text-slate-400">انقر على الأزرار لإضافة المجموعات والأشكال داخلها</span>`;
+
+                let html = "";
+                for(let g=0; g<grpCount; g++) {
+                    html += `<div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 ${colorStyle.border} ${colorStyle.bg} flex flex-wrap items-center justify-center p-1.5 gap-1 shadow-sm">`;
+                    for(let item=0; item<itemCount; item++) {
+                        html += `<span class="text-xs sm:text-sm">🔺</span>`;
+                    }
+                    html += `</div>`;
+                }
+                return html;
+            }
+
+            document.getElementById('groupDrawContainer1').innerHTML = drawFreeGroupsContainer(freeGrpCount1, freeItemCount1, {border: 'border-orange-400', bg: 'bg-orange-50'});
+            document.getElementById('groupDrawContainer2').innerHTML = drawFreeGroupsContainer(freeGrpCount2, freeItemCount2, {border: 'border-amber-400', bg: 'bg-amber-50'});
+        }
+
+        // Free Interactive State Counters for Patterns
+        let freePatBoxes1 = 0;
+        let freePatBoxes2 = 0;
+
+        // Saved values for pattern inputs to preserve student typing on adding/removing boxes
+        let savedPatValues1 = { boxes: {}, pluses: {} };
+        let savedPatValues2 = { boxes: {}, pluses: {} };
+
+        function savePatternInputs(patNum) {
+            const count = patNum === 1 ? freePatBoxes1 : freePatBoxes2;
+            const target = patNum === 1 ? savedPatValues1 : savedPatValues2;
+            for (let i = 0; i < count; i++) {
+                const bEl = document.getElementById(`patBox_${patNum}_${i}`);
+                if (bEl) target.boxes[i] = bEl.value;
+                const pEl = document.getElementById(`patPlus_${patNum}_${i}`);
+                if (pEl) target.pluses[i] = pEl.value;
+            }
+        }
+
+        function changePatternBoxes(patNum, val) {
+            savePatternInputs(patNum);
+            if (patNum === 1) freePatBoxes1 = Math.max(0, freePatBoxes1 + val);
+            if (patNum === 2) freePatBoxes2 = Math.max(0, freePatBoxes2 + val);
+            renderPatterns();
+        }
+
+        function renderPatterns() {
+            const f1 = currentTable;
+            const f2 = f2_pat1; 
+
+            document.getElementById('patternEq1').innerText = `${toArabicDigits(f1)} × ${toArabicDigits(f2)} = `;
+            document.getElementById('patternEq2').innerText = `${toArabicDigits(f2)} × ${toArabicDigits(f1)} = `;
+
+            function drawPatternSvgAndBoxes(count, isCommutative) {
+                if (count === 0) {
+                    return `<span class="text-xs font-bold text-slate-400">انقر على ➕ أضف مربعاً لإظهار مربعات النمط والأسهم المقوسة</span>`;
+                }
+
+                const patNum = isCommutative ? 2 : 1;
+                const savedObj = isCommutative ? savedPatValues2 : savedPatValues1;
+
+                let boxW = 44;
+                let gapW = 28;
+                let totalW = Math.max(260, count * boxW + (count - 1) * gapW + 20);
+                let totalH = 95;
+
+                let html = `<div class="relative flex justify-center items-start py-1 px-2 dir-rtl" style="min-width: ${totalW}px; height: ${totalH}px;">`;
+
+                for (let i = 0; i < count; i++) {
+                    let leftPos = i * (boxW + gapW);
+                    let valBox = savedObj.boxes[i] || "";
+                    html += `<div class="absolute" style="right: ${leftPos}px; top: 0px;">`;
+                    html += `<input type="text" id="patBox_${patNum}_${i}" value="${valBox}" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer text-xs w-11 h-10 border-2 ${isCommutative ? 'border-amber-400' : 'border-indigo-400'}">`;
+                    html += `</div>`;
+
+                    if (i < count - 1) {
+                        let arrowRight = leftPos + boxW;
+                        let valPlus = savedObj.pluses[i] || "";
+                        html += `<div class="absolute flex flex-col items-center" style="right: ${arrowRight}px; top: 38px; width: ${gapW}px;">`;
+                        
+                        html += `<svg width="${gapW}" height="22" viewBox="0 0 ${gapW} 22" fill="none">
+                                    <path d="M ${gapW-2},4 Q ${gapW/2},20 2,4" stroke="${isCommutative ? '#d97706' : '#4f46e5'}" stroke-width="2.5" fill="none"/>
+                                    <path d="M 2,4 L 7,8 M 2,4 L 7,1" stroke="${isCommutative ? '#d97706' : '#4f46e5'}" stroke-width="2.5" stroke-linecap="round"/>
+                                 </svg>`;
+                        
+                        html += `<div class="flex items-center gap-0.5 mt-0.5">`;
+                        html += `<span class="text-[9px] font-bold ${isCommutative ? 'text-amber-800' : 'text-indigo-800'}">➕</span>`;
+                        html += `<input type="text" id="patPlus_${patNum}_${i}" value="${valPlus}" readonly onclick="setActiveInput(this)" placeholder="؟" class="method-input cursor-pointer text-[9px] w-7 h-5 border p-0 ${isCommutative ? 'border-amber-300' : 'border-indigo-300'}">`;
+                        html += `</div>`;
+
+                        html += `</div>`;
+                    }
+                }
+
+                html += `</div>`;
+                return html;
+            }
+
+            document.getElementById('patternDisplayArea1').innerHTML = drawPatternSvgAndBoxes(freePatBoxes1, false);
+            document.getElementById('patternDisplayArea2').innerHTML = drawPatternSvgAndBoxes(freePatBoxes2, true);
+        }
+
+        function renderAllMethods() {
+            renderModels();
+            renderGrids();
+            renderAddition();
+            renderSkipCounting();
+            renderPatterns();
+
+            const f1 = currentTable;
+            const givenRes = f1 * f2_fact;
+            document.getElementById('factGiven').innerText = `${toArabicDigits(f1)} × ${toArabicDigits(f2_fact)} = ${toArabicDigits(givenRes)}`;
+            document.getElementById('factTarget').innerText = `${toArabicDigits(f2_fact)} × ${toArabicDigits(f1)} = `;
+
+            renderIntersections();
+            renderGroupDrawings();
+        }
+
+        // --- QUIZ & CERTIFICATE SYSTEM ---
+
+        function generateQuizQuestion() {
+            const num2 = Math.floor(Math.random() * 9) + 2;
+            currentQuizAnswer = currentTable * num2;
+
+            document.getElementById('quizQuestionText').innerText = `${toArabicDigits(currentTable)} × ${toArabicDigits(num2)} = ؟`;
+
+            const opts = [currentQuizAnswer];
+            while(opts.length < 4) {
+                const fake = (Math.floor(Math.random() * 9) + 1) * (Math.floor(Math.random() * 9) + 1);
+                if (!opts.includes(fake)) opts.push(fake);
+            }
+            opts.sort(() => Math.random() - 0.5);
+
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = "";
+            opts.forEach(val => {
+                const btn = document.createElement('button');
+                btn.onclick = () => checkQuizAnswer(val);
+                btn.className = "bg-white hover:bg-blue-600 hover:text-white text-slate-800 border-2 border-slate-200 font-black py-2.5 rounded-xl text-base sm:text-lg shadow-sm transition btn-bounce";
+                btn.innerText = toArabicDigits(val);
+                optionsContainer.appendChild(btn);
+            });
+            document.getElementById('quizFeedback').innerText = "";
+        }
+
+        function checkQuizAnswer(selectedVal) {
+            const feedback = document.getElementById('quizFeedback');
+            if (selectedVal === currentQuizAnswer) {
+                quizScore++;
+                feedback.innerText = "إجابة صحيحة! أحسنت 🎉";
+                feedback.className = "text-xs font-bold h-5 text-emerald-600";
+                confetti({ particleCount: 30, spread: 50 });
+                
+                document.getElementById('quizScoreDisplay').innerText = `${toArabicDigits(quizScore)} / ٣`;
+                
+                if (quizScore >= 3) {
+                    document.getElementById('certificateUnlockCard').classList.remove('hidden');
+                } else {
+                    setTimeout(generateQuizQuestion, 1200);
+                }
+            } else {
+                feedback.innerText = "إجابة خاطئة، حاول مرة أخرى! 💪";
+                feedback.className = "text-xs font-bold h-5 text-rose-600";
+            }
+        }
+
+        // --- STUDENT & MODAL SYSTEM ---
+
+        function openNameModal() { document.getElementById('nameModal').classList.remove('hidden'); }
+        function saveStudentName() {
+            const inp = document.getElementById('studentNameInput').value.trim();
+            if (inp.length > 0) {
+                studentName = inp;
+                localStorage.setItem('snimer_student_name', studentName);
+                updateStudentNameUI();
+                document.getElementById('nameModal').classList.add('hidden');
+            }
+        }
+
+        function updateStudentNameUI() {
+            document.getElementById('displayStudentName').innerText = studentName;
+            document.getElementById('certStudentName').innerText = studentName;
+        }
+
+        function setTodayDate() {
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('ar-SA');
+            document.getElementById('certDate').innerText = toArabicDigits(dateStr);
+        }
+
+        function openCertificateModal() { document.getElementById('certificateModal').classList.remove('hidden'); }
+        function closeCertificateModal() { document.getElementById('certificateModal').classList.add('hidden'); }
+    </script>
+</body>
+</html>
